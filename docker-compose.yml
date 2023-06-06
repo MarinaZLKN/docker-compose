@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  djangoapp:
+    build: ./django
+    volumes:
+      - ./django/djangoapp:/djangoapp
+      - static_volume:/djangoapp/static
+      - media_volume:/djangoapp/media
+    networks:
+      - network_db
+      - network_web
+    image: marinazlkn/docker_project:djangoapp
+
+  postgres:
+    build: ./postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    networks:
+      - network_db
+    image: marinazlkn/docker_project:postgres
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "8000:80"
+    depends_on:
+      - djangoapp
+    networks:
+      - network_web
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - static_volume:/djangoapp/static
+      - media_volume:/djangoapp/media
+    image: marinazlkn/docker_project:nginx
+
+networks:
+  network_web:
+    driver: bridge
+  network_db:
+    driver: bridge
+
+volumes:
+  static_volume:
+  media_volume:
+  postgres_data:
